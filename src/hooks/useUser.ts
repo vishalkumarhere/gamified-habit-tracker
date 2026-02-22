@@ -9,6 +9,10 @@ export function useUser() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!useSupabaseEnabled()) {
+      setLoading(false);
+      return;
+    }
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user ?? null);

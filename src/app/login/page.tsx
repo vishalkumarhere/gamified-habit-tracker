@@ -1,22 +1,29 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { useSupabaseEnabled } from "@/hooks/useUser";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const useSupabase = useSupabaseEnabled();
 
   useEffect(() => {
+    if (!useSupabase) {
+      router.replace("/dashboard");
+      return;
+    }
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
         router.replace("/dashboard");
       }
     });
-  }, [router]);
+  }, [router, useSupabase]);
 
   const handleGoogleSignIn = async () => {
+    if (!useSupabase) return;
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -42,7 +49,8 @@ export default function LoginPage() {
         </div>
         <button
           onClick={handleGoogleSignIn}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white text-gray-900 font-medium hover:bg-gray-100 transition-colors"
+          disabled={!useSupabase}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white text-gray-900 font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path
