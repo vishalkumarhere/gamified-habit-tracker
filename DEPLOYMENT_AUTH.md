@@ -2,17 +2,17 @@
 
 If Google sign-in works locally but fails in production, follow these steps.
 
-## 1. Add `NEXT_PUBLIC_APP_URL` in Vercel
+## 1. (Optional) Add `NEXT_PUBLIC_APP_URL` in Vercel
 
-In **Vercel Dashboard → Project → Settings → Environment Variables**, add:
+The callback uses the request's origin by default, so this is **optional**. Only add if you see redirect issues in production.
+
+If needed, in **Vercel Dashboard → Project → Settings → Environment Variables**, add:
 
 | Name | Value |
 |------|-------|
 | `NEXT_PUBLIC_APP_URL` | `https://your-app.vercel.app` |
 
-Use your actual Vercel URL (or custom domain). No trailing slash.
-
-**Redeploy** after adding the variable.
+**Do not** add this to `.env.local`—it would make local sign-in redirect to your Vercel app instead of localhost.
 
 ---
 

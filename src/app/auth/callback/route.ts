@@ -1,22 +1,24 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
-import { seedDefaultsForNewUser } from "@/lib/storage-supabase";
+import { seedDefaultsForNewUser } from "@/lib/seed-defaults";
 
 /**
- * Get the app origin for redirects. Use NEXT_PUBLIC_APP_URL in production
- * (e.g. https://your-app.vercel.app) to avoid serverless request.url issues.
+ * Get the app origin for redirects. Prefer the request's actual origin
+ * (where the user is) so local dev redirects to localhost, not Vercel.
+ * Use NEXT_PUBLIC_APP_URL only as fallback when request origin is unclear.
  */
 function getAppOrigin(request: NextRequest): string {
-  const explicit = process.env.NEXT_PUBLIC_APP_URL;
-  if (explicit) return explicit.replace(/\/$/, "");
-
-  const url = new URL(request.url);
   const forwardedHost = request.headers.get("x-forwarded-host");
   const forwardedProto = request.headers.get("x-forwarded-proto");
   if (forwardedHost && forwardedProto) {
-    return `${forwardedProto}://${forwardedHost}`;
+    return `${forwardedProto}://${forwardedHost}`.replace(/\/$/, "");
   }
-  return url.origin;
+  const url = new URL(request.url);
+  if (url.origin && url.origin !== "null") {
+    return url.origin;
+  }
+  const explicit = process.env.NEXT_PUBLIC_APP_URL;
+  return explicit ? explicit.replace(/\/$/, "") : "http://localhost:3000";
 }
 
 export async function GET(request: NextRequest) {
